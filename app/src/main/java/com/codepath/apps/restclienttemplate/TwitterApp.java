@@ -1,5 +1,6 @@
 package com.codepath.apps.restclienttemplate;
 
+import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.raizlabs.android.dbflow.config.FlowConfig;
 import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
