@@ -24,6 +24,7 @@ public class TimelineActivity extends AppCompatActivity {
     TweetAdapter tweetAdapter;
     ArrayList<Tweet> tweets;
     RecyclerView rvTweets;
+    private EndlessRecyclerViewScrollListener mScrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,20 +36,28 @@ public class TimelineActivity extends AppCompatActivity {
         rvTweets = (RecyclerView) findViewById(R.id.rvTweet);
         tweets = new ArrayList<>();
         tweetAdapter = new TweetAdapter(tweets);
-        rvTweets.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rvTweets.setLayoutManager(layoutManager);
         rvTweets.setAdapter(tweetAdapter);
-        populateTimeline();
+        populateTimeline(0L);
+
+        mScrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                populateTimeline(tweets.get(tweets.size() - 1).uid);
+            }
+        };
+        rvTweets.addOnScrollListener(mScrollListener);
     }
-    private void populateTimeline() {
+
+    private void populateTimeline(long sinceId) {
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                Log.d("@@@", "JSONObject response " + response);
             }
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                Log.d("@@@", "JSONArray response " + response);
                 for (int i = 0; i < response.length(); i++) {
                     try {
                         Tweet tweet = Tweet.fromJSON(response.getJSONObject(i));
@@ -74,6 +83,6 @@ public class TimelineActivity extends AppCompatActivity {
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 throwable.printStackTrace();
             }
-        });
+        }, sinceId);
     }
 }
