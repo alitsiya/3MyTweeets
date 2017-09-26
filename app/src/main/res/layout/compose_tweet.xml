@@ -4,6 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.codepath.apps.restclienttemplate.activities.ComposeActivity">
 
+    <EditText
+        android:id="@+id/etComposeTweet"
+        android:layout_width="match_parent"
+        android:layout_height="462dp"
+        android:hint="@string/compose_tweet_hint"
+        android:inputType=""/>
+
+    <Button
+        android:id="@+id/btnTweet"
+        app:layout_constraintTop_toBottomOf="@id/etComposeTweet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tweet_button"/>
 </android.support.constraint.ConstraintLayout>

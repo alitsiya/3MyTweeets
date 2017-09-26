@@ -6,5 +6,7 @@
     <string name="intent_scheme">oauth</string>
     <string name="intent_host">cprest</string>
     <string name="compose_button">Compose</string>
+    <string name="tweet_button">Tweet</string>
+    <string name="compose_tweet_hint">What\'s happening?</string>
 
 </resources>

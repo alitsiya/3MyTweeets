@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 public class TimelineActivity extends AppCompatActivity {
 
+    static final int COMPOSE_TWEET_REQUEST = 1;
     private TwitterClient client;
     TweetAdapter tweetAdapter;
     ArrayList<Tweet> tweets;
@@ -69,7 +70,7 @@ public class TimelineActivity extends AppCompatActivity {
             // This is the add button
             case R.id.action_compose:
                 Intent i = new Intent(this, ComposeActivity.class);
-                startActivity(i);
+                startActivityForResult(i, COMPOSE_TWEET_REQUEST);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -110,5 +111,47 @@ public class TimelineActivity extends AppCompatActivity {
                 throwable.printStackTrace();
             }
         }, sinceId);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == COMPOSE_TWEET_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String tweet = data.getStringExtra("result");
+                client.submitTweet(tweet, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        try {
+                            Tweet tweet = Tweet.fromJSON(response);
+                            tweets.add(0, tweet);
+                            tweetAdapter.notifyItemInserted(0);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable,
+                        JSONObject errorResponse)
+                    {
+                    }
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable,
+                        JSONArray errorResponse)
+                    {
+                    }
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString,
+                        Throwable throwable)
+                    {
+                    }
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                    }
+                });
+            }
+            if (resultCode == RESULT_CANCELED) {
+                //DO NOTHING
+            }
+        }
     }
 }
