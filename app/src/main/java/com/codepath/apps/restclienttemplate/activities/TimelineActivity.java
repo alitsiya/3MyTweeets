@@ -1,12 +1,14 @@
 package com.codepath.apps.restclienttemplate.activities;
 
 import android.content.Intent;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
@@ -31,6 +33,7 @@ public class TimelineActivity extends AppCompatActivity {
     TweetAdapter tweetAdapter;
     ArrayList<Tweet> tweets;
     RecyclerView rvTweets;
+    SwipeRefreshLayout swipeContainer;
     private EndlessRecyclerViewScrollListener mScrollListener;
 
     @Override
@@ -41,6 +44,7 @@ public class TimelineActivity extends AppCompatActivity {
         client = TwitterApp.getRestClient();
 
         rvTweets = (RecyclerView) findViewById(R.id.rvTweet);
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         tweets = new ArrayList<>();
         tweetAdapter = new TweetAdapter(tweets);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -55,6 +59,15 @@ public class TimelineActivity extends AppCompatActivity {
             }
         };
         rvTweets.addOnScrollListener(mScrollListener);
+
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                tweetAdapter.clear();
+                populateTimeline(0L);
+                swipeContainer.setRefreshing(false);
+            }
+        });
     }
 
     @Override
