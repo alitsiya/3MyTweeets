@@ -7,10 +7,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.codepath.apps.restclienttemplate.activities.ComposeActivity">
 
+    <TextView
+        android:id="@+id/tvTweetSize"
+        android:layout_width="66dp"
+        android:layout_height="25dp"
+        android:text="@string/tweet_size"/>
     <EditText
         android:id="@+id/etComposeTweet"
         android:layout_width="match_parent"
         android:layout_height="462dp"
+        android:maxLength="140"
         android:hint="@string/compose_tweet_hint"
         android:inputType=""/>
 
