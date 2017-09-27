@@ -20,4 +20,15 @@ public class User {
 
         return user;
     }
+
+    public static User fromDB(TweetModel tweetModel) {
+        User user = new User();
+
+        user.name = tweetModel.getUserName();
+        user.uid = tweetModel.getUserUid();
+        user.screenName = tweetModel.getScreenName();
+        user.profileImageUrl = tweetModel.getProfileImageUrl();
+
+        return user;
+    }
 }

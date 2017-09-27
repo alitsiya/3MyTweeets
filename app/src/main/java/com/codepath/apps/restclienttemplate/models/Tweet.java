@@ -19,4 +19,14 @@ public class Tweet {
         tweet.user = User.fromJSON(jsonObject.getJSONObject("user"));
         return tweet;
     }
+
+    public static Tweet fromDB(TweetModel tweetModel) {
+        Tweet tweet = new Tweet();
+
+        tweet.body = tweetModel.getBody();
+        tweet.uid = tweetModel.getUid();
+        tweet.createdAt = tweetModel.getCreatedAt();
+        tweet.user = User.fromDB(tweetModel);
+        return tweet;
+    }
 }

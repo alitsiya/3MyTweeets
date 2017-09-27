@@ -1,6 +1,9 @@
 package com.codepath.apps.restclienttemplate.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,15 +11,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
+import com.codepath.apps.restclienttemplate.models.TweetModel;
 import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.apps.restclienttemplate.utils.EndlessRecyclerViewScrollListener;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.raizlabs.android.dbflow.sql.language.Delete;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +28,9 @@ import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TimelineActivity extends AppCompatActivity {
 
@@ -55,7 +61,9 @@ public class TimelineActivity extends AppCompatActivity {
         mScrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                populateTimeline(tweets.get(tweets.size() - 1).uid);
+                if (isNetworkAvailable() || isOnline()) {
+                    populateTimeline(tweets.get(tweets.size() - 1).uid);
+                }
             }
         };
         rvTweets.addOnScrollListener(mScrollListener);
@@ -91,6 +99,16 @@ public class TimelineActivity extends AppCompatActivity {
     }
 
     private void populateTimeline(long sinceId) {
+        if (!isNetworkAvailable() || !isOnline()) {
+            //populate timeline from DB
+            List<TweetModel> tweetModelList = SQLite.select().
+                from(TweetModel.class).queryList();
+            for (int i = 0; i < tweetModelList.size(); i++) {
+                Tweet tweet = Tweet.fromDB(tweetModelList.get(i));
+                tweets.add(tweet);
+                tweetAdapter.notifyItemInserted(tweets.size() - 1);
+            }
+        }
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -98,11 +116,17 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+//                // if got response delete data in DB to refresh
+                Delete.table(TweetModel.class);
+
                 for (int i = 0; i < response.length(); i++) {
                     try {
                         Tweet tweet = Tweet.fromJSON(response.getJSONObject(i));
                         tweets.add(tweet);
                         tweetAdapter.notifyItemInserted(tweets.size() - 1);
+                        // Save TweetModel to DB
+                        TweetModel tweetModel = new TweetModel(response.getJSONObject(i));
+                        tweetModel.save();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -138,6 +162,9 @@ public class TimelineActivity extends AppCompatActivity {
                             Tweet tweet = Tweet.fromJSON(response);
                             tweets.add(0, tweet);
                             tweetAdapter.notifyItemInserted(0);
+                            // Save TweetModel to DB
+                            TweetModel tweetModel = new TweetModel(response);
+                            tweetModel.save();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -166,5 +193,27 @@ public class TimelineActivity extends AppCompatActivity {
                 //DO NOTHING
             }
         }
+    }
+
+    private Boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+            = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+    //using this method as a helper method since it returns false of Pixel
+    private boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int     exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
