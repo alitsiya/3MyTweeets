@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_margin="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/ivUserImage"
+        android:layout_width="@dimen/icon"
+        android:layout_height="@dimen/icon"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        app:srcCompat="@android:color/black"/>
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="@dimen/margin"
+        android:layout_toEndOf="@+id/ivUserImage"/>
+
+    <TextView
+        android:id="@+id/tvTweetTimeAgo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tvTweetBody"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:id="@+id/tvTweetBody"
+        android:autoLink="all"
+        android:linksClickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvName"
+        android:layout_marginLeft="@dimen/margin"
+        android:layout_toEndOf="@+id/ivUserImage"/>
+</RelativeLayout>

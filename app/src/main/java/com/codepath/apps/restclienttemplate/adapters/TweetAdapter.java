@@ -15,23 +15,33 @@ import com.codepath.apps.restclienttemplate.models.Tweet;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> {
 
-    private final List<Tweet> mTweets;
+    private List<Tweet> mTweets = new ArrayList<>();;
     Context context;
 
-    public TweetAdapter(List<Tweet> tweets) {
+    private ItemClickListener mClickListener;
+
+    public interface ItemClickListener {
+        void onItemClicked(View v, Tweet tweet);
+    }
+
+    public TweetAdapter(List<Tweet> tweets, ItemClickListener listener) {
+        mClickListener = listener;
         mTweets = tweets;
     }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
         View tweetView = inflater.inflate(R.layout.item_tweet, parent, false);
+
         return new ViewHolder(tweetView);
     }
 
@@ -50,7 +60,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         return mTweets.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ImageView ivProfileImage;
         public TextView tvUsername;
         public TextView tvBody;
@@ -63,6 +73,13 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
             tvUsername = (TextView) itemView.findViewById(R.id.tvUserName);
             tvBody = (TextView) itemView.findViewById(R.id.tvBody);
             tvTimeAgo = (TextView) itemView.findViewById(R.id.tvTimeAgo);
+            itemView.setOnClickListener(this);
+        }
+        @Override
+        public void onClick(View v) {
+            int position = getAdapterPosition();
+            Tweet tweet = mTweets.get(position);
+            mClickListener.onItemClicked(v, tweet);
         }
     }
 

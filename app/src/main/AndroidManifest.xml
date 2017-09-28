@@ -38,6 +38,8 @@
         </activity>
         <activity android:name=".activities.ComposeActivity">
         </activity>
+        <activity android:name=".activities.TweetActivity">
+        </activity>
     </application>
 
 </manifest>

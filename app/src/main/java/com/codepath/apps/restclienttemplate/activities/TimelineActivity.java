@@ -11,6 +11,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.TweetModel;
@@ -25,6 +27,7 @@ import com.raizlabs.android.dbflow.sql.language.SQLite;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -32,7 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TimelineActivity extends AppCompatActivity {
+public class TimelineActivity extends AppCompatActivity implements TweetAdapter.ItemClickListener {
 
     static final int COMPOSE_TWEET_REQUEST = 1;
     private TwitterClient client;
@@ -52,7 +55,7 @@ public class TimelineActivity extends AppCompatActivity {
         rvTweets = (RecyclerView) findViewById(R.id.rvTweet);
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         tweets = new ArrayList<>();
-        tweetAdapter = new TweetAdapter(tweets);
+        tweetAdapter = new TweetAdapter(tweets, this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvTweets.setLayoutManager(layoutManager);
         rvTweets.setAdapter(tweetAdapter);
@@ -193,6 +196,13 @@ public class TimelineActivity extends AppCompatActivity {
                 //DO NOTHING
             }
         }
+    }
+
+    @Override
+    public void onItemClicked(View v, Tweet tweet) {
+        Intent i = new Intent(this, TweetActivity.class);
+        i.putExtra("tweet", Parcels.wrap(tweet));
+        startActivity(i);
     }
 
     private Boolean isNetworkAvailable() {
