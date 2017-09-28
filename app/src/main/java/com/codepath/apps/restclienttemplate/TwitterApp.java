@@ -1,6 +1,7 @@
 package com.codepath.apps.restclienttemplate;
 
 import com.codepath.apps.restclienttemplate.network.TwitterClient;
+import com.codepath.apps.restclienttemplate.utils.TypefaceUtil;
 import com.raizlabs.android.dbflow.config.FlowConfig;
 import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
@@ -26,7 +27,7 @@ public class TwitterApp extends Application {
 
 		FlowManager.init(new FlowConfig.Builder(this).build());
 		FlowLog.setMinimumLoggingLevel(FlowLog.Level.V);
-
+		TypefaceUtil.overrideFont(getApplicationContext(), "SERIF", "helvetica-neue-bold.ttf");
 		TwitterApp.context = this;
 	}
 
