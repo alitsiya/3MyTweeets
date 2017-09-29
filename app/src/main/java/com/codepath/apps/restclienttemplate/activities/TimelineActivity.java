@@ -1,9 +1,6 @@
 package com.codepath.apps.restclienttemplate.activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +17,7 @@ import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.apps.restclienttemplate.utils.EndlessRecyclerViewScrollListener;
+import com.codepath.apps.restclienttemplate.utils.NetworkUtil;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.raizlabs.android.dbflow.sql.language.Delete;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
@@ -31,7 +29,6 @@ import org.parceler.Parcels;
 
 import cz.msebera.android.httpclient.Header;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +41,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     RecyclerView rvTweets;
     SwipeRefreshLayout swipeContainer;
     private EndlessRecyclerViewScrollListener mScrollListener;
+    private NetworkUtil mNetworkUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +50,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
 
         client = TwitterApp.getRestClient();
 
+        mNetworkUtil = new NetworkUtil(this);
         rvTweets = (RecyclerView) findViewById(R.id.rvTweet);
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         tweets = new ArrayList<>();
@@ -64,7 +63,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         mScrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                if (isNetworkAvailable() || isOnline()) {
+                if (mNetworkUtil.isNetworkAvailable()) {
                     populateTimeline(tweets.get(tweets.size() - 1).uid);
                 }
             }
@@ -102,7 +101,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     }
 
     private void populateTimeline(long sinceId) {
-        if (!isNetworkAvailable() || !isOnline()) {
+        if (!mNetworkUtil.isNetworkAvailable()) {
             //populate timeline from DB
             List<TweetModel> tweetModelList = SQLite.select().
                 from(TweetModel.class).queryList();
@@ -203,27 +202,5 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         Intent i = new Intent(this, TweetActivity.class);
         i.putExtra("tweet", Parcels.wrap(tweet));
         startActivity(i);
-    }
-
-    private Boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-            = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
-    }
-
-    //using this method as a helper method since it returns false of Pixel
-    private boolean isOnline() {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int     exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 }
