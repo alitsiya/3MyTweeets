@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_margin="5dp"
+                android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
@@ -18,7 +19,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="@dimen/margin"
         android:layout_toEndOf="@+id/ivUserImage"/>
 
     <TextView
@@ -35,6 +35,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvName"
-        android:layout_marginLeft="@dimen/margin"
+        android:lines="3"
         android:layout_toEndOf="@+id/ivUserImage"/>
+
+    <Button
+        android:id="@+id/btnReply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reply"
+        android:layout_below="@+id/tvTweetBody"/>
+
+    <EditText
+        android:id="@+id/etComposeReply"
+        android:layout_below="@id/btnReply"
+        android:visibility="gone"
+        android:hint="@string/compose_tweet_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="3"
+        />
+    <Button
+        android:id="@+id/btnSendReply"
+        android:visibility="gone"
+        android:layout_below="@+id/etComposeReply"
+        android:text="@string/tweet_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
 </RelativeLayout>

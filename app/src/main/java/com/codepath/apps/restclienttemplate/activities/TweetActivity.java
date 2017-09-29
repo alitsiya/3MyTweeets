@@ -2,17 +2,29 @@ package com.codepath.apps.restclienttemplate.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.R;
+import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.codepath.apps.restclienttemplate.models.TweetModel;
+import com.codepath.apps.restclienttemplate.network.TwitterClient;
+import com.codepath.apps.restclienttemplate.utils.DateTimeUtil;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import cz.msebera.android.httpclient.Header;
 
 public class TweetActivity extends AppCompatActivity {
 
@@ -20,6 +32,12 @@ public class TweetActivity extends AppCompatActivity {
     @BindView(R.id.tvName) TextView tvName;
     @BindView(R.id.tvTweetTimeAgo) TextView tvTweetTimeAgo;
     @BindView(R.id.tvTweetBody) TextView tvTweetBody;
+    @BindView(R.id.btnReply) Button btnReply;
+    @BindView(R.id.etComposeReply) EditText etComposeReply;
+    @BindView(R.id.btnSendReply) Button btnSendReply;
+
+    Tweet mTweet;
+    private TwitterClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +46,49 @@ public class TweetActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        Tweet tweet = (Tweet) Parcels.unwrap(getIntent().getParcelableExtra("tweet"));
+        client = TwitterApp.getRestClient();
+        mTweet = (Tweet) Parcels.unwrap(getIntent().getParcelableExtra("tweet"));
 
-        tvName.setText(tweet.user.screenName);
-        tvTweetBody.setText(tweet.body);
-        tvTweetTimeAgo.setText(tweet.createdAt);
+        tvName.setText(mTweet.user.screenName);
+        tvTweetBody.setText(mTweet.body);
+        String relativeTime = new DateTimeUtil().getRelativeTimeAgo(mTweet.createdAt);
+        tvTweetTimeAgo.setText(relativeTime);
 
-        Glide.with(this).load(tweet.user.profileImageUrl).into(ivUserImage);
+        Glide.with(this).load(mTweet.user.profileImageUrl).into(ivUserImage);
+    }
+
+    @OnClick(R.id.btnReply)
+    public void onReplyClicked() {
+        btnReply.setVisibility(View.INVISIBLE);
+        etComposeReply.setVisibility(View.VISIBLE);
+        btnSendReply.setVisibility(View.VISIBLE);
+        String replyString = "@" + mTweet.user.screenName + " ";
+        etComposeReply.setText(replyString);
+    }
+
+    @OnClick(R.id.btnSendReply)
+    public void onSendTweetClicked() {
+        String tweet = etComposeReply.getText().toString();
+        client.submitTweet(tweet, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                // Save TweetModel to DB
+                TweetModel tweetModel = new TweetModel(response);
+                tweetModel.save();
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+        });
+        finish();
     }
 }

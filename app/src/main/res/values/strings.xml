@@ -9,5 +9,6 @@
     <string name="tweet_button">Tweet</string>
     <string name="compose_tweet_hint">What\'s happening?</string>
     <string name="tweet_size">140</string>
+    <string name="reply">Reply</string>
 
 </resources>

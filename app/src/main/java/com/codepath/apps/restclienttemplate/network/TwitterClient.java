@@ -1,6 +1,7 @@
 package com.codepath.apps.restclienttemplate.network;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.oauth.OAuthBaseClient;
@@ -53,10 +54,13 @@ public class TwitterClient extends OAuthBaseClient {
 		client.get(apiUrl, params, handler);
 	}
 
-	public void submitTweet(String tweet, AsyncHttpResponseHandler handler) {
+	public void submitTweet(String tweet, @Nullable Long replyId, AsyncHttpResponseHandler handler) {
 		String apiUrl = getApiUrl("statuses/update.json");
 		RequestParams params = new RequestParams();
 		params.put("status", tweet);
+		if (replyId != null) {
+			params.put("in_reply_to_status_id", replyId);
+		}
 		client.post(apiUrl, params, handler);
 	}
 }

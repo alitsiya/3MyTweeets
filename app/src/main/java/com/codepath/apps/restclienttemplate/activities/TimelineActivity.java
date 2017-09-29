@@ -158,7 +158,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         if (requestCode == COMPOSE_TWEET_REQUEST) {
             if (resultCode == RESULT_OK) {
                 String tweet = data.getStringExtra("result");
-                client.submitTweet(tweet, new JsonHttpResponseHandler() {
+                client.submitTweet(tweet, null, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         try {
