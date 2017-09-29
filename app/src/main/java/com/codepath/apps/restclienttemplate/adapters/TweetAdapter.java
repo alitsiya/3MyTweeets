@@ -9,12 +9,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.apps.restclienttemplate.utils.DateTimeUtil;
 
+import jp.wasabeef.glide.transformations.BlurTransformation;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.bumptech.glide.request.RequestOptions.bitmapTransform;
 
 public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> {
 
@@ -51,7 +56,9 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         String relativeTime = new DateTimeUtil().getRelativeTimeAgo(tweet.createdAt);
         holder.tvTimeAgo.setText(relativeTime);
 
-        Glide.with(context).load(tweet.user.profileImageUrl).into(holder.ivProfileImage);
+        Glide.with(context).load(tweet.user.profileImageUrl)
+            .apply(RequestOptions.circleCropTransform())
+            .into(holder.ivProfileImage);
     }
     @Override
     public int getItemCount() {

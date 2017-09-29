@@ -15,6 +15,7 @@
 
     <TextView
         android:id="@+id/tvUserName"
+        android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -31,10 +32,12 @@
     <TextView
         android:id="@+id/tvBody"
         android:autoLink="all"
+        android:layout_marginTop="@dimen/margin"
         android:linksClickable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvUserName"
         android:layout_marginLeft="@dimen/margin"
+        android:layout_marginBottom="@dimen/margin"
         android:layout_toEndOf="@+id/ivProfileImage"/>
 </RelativeLayout>

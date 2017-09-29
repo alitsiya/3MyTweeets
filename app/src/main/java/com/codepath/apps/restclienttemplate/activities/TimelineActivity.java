@@ -1,9 +1,13 @@
 package com.codepath.apps.restclienttemplate.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -13,6 +17,7 @@ import android.view.View;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.TweetModel;
+import com.codepath.apps.restclienttemplate.models.User;
 import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
@@ -40,6 +45,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     ArrayList<Tweet> tweets;
     RecyclerView rvTweets;
     SwipeRefreshLayout swipeContainer;
+    Context mContext;
     private EndlessRecyclerViewScrollListener mScrollListener;
     private NetworkUtil mNetworkUtil;
 
@@ -50,6 +56,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
 
         client = TwitterApp.getRestClient();
 
+        mContext = this;
         mNetworkUtil = new NetworkUtil(this);
         rvTweets = (RecyclerView) findViewById(R.id.rvTweet);
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
@@ -58,6 +65,9 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvTweets.setLayoutManager(layoutManager);
         rvTweets.setAdapter(tweetAdapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvTweets.getContext(),
+            DividerItemDecoration.VERTICAL);
+        rvTweets.addItemDecoration(dividerItemDecoration);
         populateTimeline(0L);
 
         mScrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
@@ -78,6 +88,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
                 swipeContainer.setRefreshing(false);
             }
         });
+        getAndSaveUserInfo();
     }
 
     @Override
@@ -202,5 +213,24 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         Intent i = new Intent(this, TweetActivity.class);
         i.putExtra("tweet", Parcels.wrap(tweet));
         startActivity(i);
+    }
+
+    private void getAndSaveUserInfo() {
+        client.verifyCredentials(new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                try {
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+                    prefs.edit()
+                        .putString("name", response.getString("name"))
+                        .putLong("id", response.getLong("id"))
+                        .putString("screen_name", response.getString("screen_name"))
+                        .putString("profile_image_url", response.getString("profile_image_url"))
+                        .apply();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }

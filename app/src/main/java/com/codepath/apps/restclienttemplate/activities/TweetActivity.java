@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.Tweet;
@@ -51,13 +52,14 @@ public class TweetActivity extends AppCompatActivity {
         mNetworkUtil = new NetworkUtil(this);
         client = TwitterApp.getRestClient();
         mTweet = (Tweet) Parcels.unwrap(getIntent().getParcelableExtra("tweet"));
-
         tvName.setText(mTweet.user.screenName);
         tvTweetBody.setText(mTweet.body);
         String relativeTime = new DateTimeUtil().getRelativeTimeAgo(mTweet.createdAt);
         tvTweetTimeAgo.setText(relativeTime);
 
-        Glide.with(this).load(mTweet.user.profileImageUrl).into(ivUserImage);
+        Glide.with(this).load(mTweet.user.profileImageUrl)
+            .apply(RequestOptions.circleCropTransform())
+            .into(ivUserImage);
     }
 
     @OnClick(R.id.btnReply)

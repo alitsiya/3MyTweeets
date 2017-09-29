@@ -7,18 +7,50 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.codepath.apps.restclienttemplate.activities.ComposeActivity">
 
+    <ImageView
+        android:id="@+id/ivUseImage"
+        android:layout_width="@dimen/icon"
+        android:layout_height="@dimen/icon"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        app:srcCompat="@android:color/black"
+        android:layout_margin="@dimen/margin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvUserName"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="viewEnd"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/ivUseImage"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/margin"
+        app:layout_constraintEnd_toStartOf="@+id/ivUseImage"
+        android:layout_marginEnd="@dimen/margin"/>
+
     <TextView
         android:id="@+id/tvTweetSize"
-        android:layout_width="66dp"
-        android:layout_height="25dp"
-        android:text="@string/tweet_size"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tweet_size"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="@dimen/margin"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/margin"/>
+
     <EditText
         android:id="@+id/etComposeTweet"
         android:layout_width="match_parent"
-        android:layout_height="462dp"
+        android:layout_height="136dp"
         android:maxLength="140"
         android:hint="@string/compose_tweet_hint"
-        android:inputType=""/>
+        android:inputType=""
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@+id/tvTweetSize"
+        tools:layout_editor_absoluteY="37dp"/>
 
     <Button
         android:id="@+id/btnTweet"
