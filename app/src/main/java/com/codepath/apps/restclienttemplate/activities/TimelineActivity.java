@@ -22,8 +22,6 @@ import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.apps.restclienttemplate.utils.EndlessRecyclerViewScrollListener;
 import com.codepath.apps.restclienttemplate.utils.NetworkUtil;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.raizlabs.android.dbflow.sql.language.Delete;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,12 +42,14 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     @Inject NetworkUtil mNetworkUtil;
 
     static final int COMPOSE_TWEET_REQUEST = 1;
+    static final int REPLY_TWEET_REQUEST = 2;
     private TweetAdapter tweetAdapter;
     private ArrayList<Tweet> tweets;
     private RecyclerView rvTweets;
     private SwipeRefreshLayout swipeContainer;
     Context mContext;
     private EndlessRecyclerViewScrollListener mScrollListener;
+    private LinearLayoutManager mLinearLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,15 +63,15 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         tweets = new ArrayList<>();
         tweetAdapter = new TweetAdapter(tweets, this);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        rvTweets.setLayoutManager(layoutManager);
+        mLinearLayoutManager = new LinearLayoutManager(this);
+        rvTweets.setLayoutManager(mLinearLayoutManager);
         rvTweets.setAdapter(tweetAdapter);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvTweets.getContext(),
             DividerItemDecoration.VERTICAL);
         rvTweets.addItemDecoration(dividerItemDecoration);
         populateTimeline(0L);
 
-        mScrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
+        mScrollListener = new EndlessRecyclerViewScrollListener(mLinearLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 if (mNetworkUtil.isNetworkAvailable()) {
@@ -115,8 +115,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     private void populateTimeline(long sinceId) {
         if (!mNetworkUtil.isNetworkAvailable()) {
             //populate timeline from DB
-            List<TweetModel> tweetModelList = SQLite.select().
-                from(TweetModel.class).queryList();
+            List<TweetModel> tweetModelList = TweetModel.orderByDate();
             for (int i = 0; i < tweetModelList.size(); i++) {
                 Tweet tweet = Tweet.fromDB(tweetModelList.get(i));
                 tweets.add(tweet);
@@ -131,16 +130,17 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
 //                // if got response delete data in DB to refresh
-                Delete.table(TweetModel.class);
 
                 for (int i = 0; i < response.length(); i++) {
                     try {
                         Tweet tweet = Tweet.fromJSON(response.getJSONObject(i));
                         tweets.add(tweet);
                         tweetAdapter.notifyItemInserted(tweets.size() - 1);
-                        // Save TweetModel to DB
-                        TweetModel tweetModel = new TweetModel(response.getJSONObject(i));
-                        tweetModel.save();
+                        // Save TweetModel if not in DB
+                        if (TweetModel.byId(tweet.uid) == null) {
+                            TweetModel tweetModel = new TweetModel(response.getJSONObject(i));
+                            tweetModel.save();
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -169,39 +169,17 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         if (requestCode == COMPOSE_TWEET_REQUEST) {
             if (resultCode == RESULT_OK) {
                 String tweet = data.getStringExtra("result");
-                mClient.submitTweet(tweet, null, new JsonHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                        try {
-                            Tweet tweet = Tweet.fromJSON(response);
-                            tweets.add(0, tweet);
-                            tweetAdapter.notifyItemInserted(0);
-                            // Save TweetModel to DB
-                            TweetModel tweetModel = new TweetModel(response);
-                            tweetModel.save();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable,
-                        JSONObject errorResponse)
-                    {
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable,
-                        JSONArray errorResponse)
-                    {
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, String responseString,
-                        Throwable throwable)
-                    {
-                    }
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                    }
-                });
+                submitTweet(tweet, null);
+            }
+        }
+        if (requestCode == REPLY_TWEET_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String tweet = data.getStringExtra("result");
+                Long uid = data.getLongExtra("uid", 0L);
+                if (uid == 0L) {
+                    uid = null;
+                }
+                submitTweet(tweet, uid);
             }
             if (resultCode == RESULT_CANCELED) {
                 //DO NOTHING
@@ -213,7 +191,48 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     public void onItemClicked(View v, Tweet tweet) {
         Intent i = new Intent(this, TweetActivity.class);
         i.putExtra("tweet", Parcels.wrap(tweet));
-        startActivity(i);
+        startActivityForResult(i, REPLY_TWEET_REQUEST);
+    }
+
+    private void submitTweet(String tweet, Long replyId) {
+        if (mNetworkUtil.isNetworkAvailable()) {
+            mClient.submitTweet(tweet, replyId, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    try {
+                        Tweet tweet = Tweet.fromJSON(response);
+                        tweets.add(0, tweet);
+                        tweetAdapter.notifyItemInserted(0);
+                        mLinearLayoutManager.scrollToPositionWithOffset(0, 0);
+                        // Save TweetModel to DB
+                        if (TweetModel.byId(tweet.uid) == null) {
+                            TweetModel tweetModel = new TweetModel(response);
+                            tweetModel.save();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable,
+                    JSONObject errorResponse)
+                {
+                }
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable,
+                    JSONArray errorResponse)
+                {
+                }
+                @Override
+                public void onFailure(int statusCode, Header[] headers, String responseString,
+                    Throwable throwable)
+                {
+                }
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, String responseString) {
+                }
+            });
+        }
     }
 
     private void getAndSaveUserInfo() {

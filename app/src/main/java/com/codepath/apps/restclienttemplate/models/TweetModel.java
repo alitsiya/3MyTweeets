@@ -4,6 +4,7 @@ import com.codepath.apps.restclienttemplate.utils.MyDatabase;
 import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.sql.language.OrderBy;
 import com.raizlabs.android.dbflow.sql.language.Select;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
@@ -109,7 +110,11 @@ public class TweetModel extends BaseModel {
 	
 	// Record Finders
 	public static TweetModel byId(long id) {
-		return new Select().from(TweetModel.class).where(TweetModel_Table.id.eq(id)).querySingle();
+		return new Select().from(TweetModel.class).where(TweetModel_Table.uid.eq(id)).querySingle();
+	}
+
+	public static List<TweetModel> orderByDate() {
+		return new Select().from(TweetModel.class).orderBy(OrderBy.fromProperty(TweetModel_Table.createdAt)).queryList();
 	}
 
 	public static List<TweetModel> recentItems() {

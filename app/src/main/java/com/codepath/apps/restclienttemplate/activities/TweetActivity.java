@@ -1,5 +1,7 @@
 package com.codepath.apps.restclienttemplate.activities;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,20 +15,14 @@ import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.Tweet;
-import com.codepath.apps.restclienttemplate.models.TweetModel;
 import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.codepath.apps.restclienttemplate.utils.DateTimeUtil;
 import com.codepath.apps.restclienttemplate.utils.NetworkUtil;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import cz.msebera.android.httpclient.Header;
 
 import javax.inject.Inject;
 
@@ -75,29 +71,15 @@ public class TweetActivity extends AppCompatActivity {
 
     @OnClick(R.id.btnSendReply)
     public void onSendTweetClicked() {
-        String tweet = etComposeReply.getText().toString();
-        if (mNetworkUtil.isNetworkAvailable()) {
-            mClient.submitTweet(tweet, null, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    // Save TweetModel to DB
-                    TweetModel tweetModel = new TweetModel(response);
-                    tweetModel.save();
-                }
-                @Override
-                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                    super.onFailure(statusCode, headers, responseString, throwable);
-                }
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-                @Override
-                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    super.onFailure(statusCode, headers, throwable, errorResponse);
-                }
-            });
-            finish();
+        final String tweet = etComposeReply.getText().toString();
+        if (tweet.length() > 0) {
+            final Intent returnIntent = new Intent();
+            returnIntent.putExtra("result", tweet);
+            returnIntent.putExtra("uid", mTweet.uid);
+            setResult(Activity.RESULT_OK, returnIntent);
+        } else {
+            setResult(Activity.RESULT_CANCELED, null);
         }
+        finish();
     }
 }
