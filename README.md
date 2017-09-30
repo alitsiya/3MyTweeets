@@ -2,7 +2,7 @@
 
 **MyTweeets** is an android app that allows a user to view his Twitter timeline and post a new tweet. The app utilizes [Twitter REST API](https://dev.twitter.com/rest/public).
 
-Time spent: **8** hours spent in total
+Time spent: **8.5** hours spent in total
 
 ## User Stories
 
@@ -47,7 +47,8 @@ The following **additional** features are implemented:
 
 * [x] List anything else that you can get done to improve the app functionality!
 
-** Added helvetica-neue-bold font as default and changed app icon
+    * Added helvetica-neue-bold font as default and changed app icon
+    * Added Dagger for dependency injection
 
 ## Video Walkthrough
 

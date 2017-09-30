@@ -3,7 +3,6 @@ package com.codepath.apps.restclienttemplate.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import android.view.View;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.TweetModel;
-import com.codepath.apps.restclienttemplate.models.User;
 import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
@@ -37,27 +35,30 @@ import cz.msebera.android.httpclient.Header;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class TimelineActivity extends AppCompatActivity implements TweetAdapter.ItemClickListener {
 
+    @Inject SharedPreferences mSharedPreferences;
+    @Inject TwitterClient mClient;
+    @Inject NetworkUtil mNetworkUtil;
+
     static final int COMPOSE_TWEET_REQUEST = 1;
-    private TwitterClient client;
-    TweetAdapter tweetAdapter;
-    ArrayList<Tweet> tweets;
-    RecyclerView rvTweets;
-    SwipeRefreshLayout swipeContainer;
+    private TweetAdapter tweetAdapter;
+    private ArrayList<Tweet> tweets;
+    private RecyclerView rvTweets;
+    private SwipeRefreshLayout swipeContainer;
     Context mContext;
     private EndlessRecyclerViewScrollListener mScrollListener;
-    private NetworkUtil mNetworkUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
 
-        client = TwitterApp.getRestClient();
+        ((TwitterApp) getApplication()).getTwitterComponent().inject(this);
 
         mContext = this;
-        mNetworkUtil = new NetworkUtil(this);
         rvTweets = (RecyclerView) findViewById(R.id.rvTweet);
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         tweets = new ArrayList<>();
@@ -122,7 +123,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
                 tweetAdapter.notifyItemInserted(tweets.size() - 1);
             }
         }
-        client.getHomeTimeline(new JsonHttpResponseHandler() {
+        mClient.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
             }
@@ -168,7 +169,7 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
         if (requestCode == COMPOSE_TWEET_REQUEST) {
             if (resultCode == RESULT_OK) {
                 String tweet = data.getStringExtra("result");
-                client.submitTweet(tweet, null, new JsonHttpResponseHandler() {
+                mClient.submitTweet(tweet, null, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         try {
@@ -216,12 +217,11 @@ public class TimelineActivity extends AppCompatActivity implements TweetAdapter.
     }
 
     private void getAndSaveUserInfo() {
-        client.verifyCredentials(new JsonHttpResponseHandler() {
+        mClient.verifyCredentials(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-                    prefs.edit()
+                    mSharedPreferences.edit()
                         .putString("name", response.getString("name"))
                         .putLong("id", response.getLong("id"))
                         .putString("screen_name", response.getString("screen_name"))

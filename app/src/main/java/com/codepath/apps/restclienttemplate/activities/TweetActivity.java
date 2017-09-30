@@ -28,7 +28,12 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cz.msebera.android.httpclient.Header;
 
+import javax.inject.Inject;
+
 public class TweetActivity extends AppCompatActivity {
+
+    @Inject TwitterClient mClient;
+    @Inject NetworkUtil mNetworkUtil;
 
     @BindView(R.id.ivUserImage) ImageView ivUserImage;
     @BindView(R.id.tvName) TextView tvName;
@@ -37,20 +42,17 @@ public class TweetActivity extends AppCompatActivity {
     @BindView(R.id.btnReply) Button btnReply;
     @BindView(R.id.etComposeReply) EditText etComposeReply;
     @BindView(R.id.btnSendReply) Button btnSendReply;
-    private NetworkUtil mNetworkUtil;
 
     Tweet mTweet;
-    private TwitterClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_tweet);
 
+        ((TwitterApp) getApplication()).getTwitterComponent().inject(this);
         ButterKnife.bind(this);
 
-        mNetworkUtil = new NetworkUtil(this);
-        client = TwitterApp.getRestClient();
         mTweet = (Tweet) Parcels.unwrap(getIntent().getParcelableExtra("tweet"));
         tvName.setText(mTweet.user.screenName);
         tvTweetBody.setText(mTweet.body);
@@ -75,7 +77,7 @@ public class TweetActivity extends AppCompatActivity {
     public void onSendTweetClicked() {
         String tweet = etComposeReply.getText().toString();
         if (mNetworkUtil.isNetworkAvailable()) {
-            client.submitTweet(tweet, null, new JsonHttpResponseHandler() {
+            mClient.submitTweet(tweet, null, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                     // Save TweetModel to DB

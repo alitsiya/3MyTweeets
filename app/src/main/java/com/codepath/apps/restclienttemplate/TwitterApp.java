@@ -20,18 +20,29 @@ import android.content.Context;
  */
 public class TwitterApp extends Application {
 	private static Context context;
+	private TwitterComponent mTwitterComponent;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 
+		mTwitterComponent = DaggerTwitterComponent.builder()
+			.appModule(new AppModule(this))
+			.twitterModule(new TwitterModule(this))
+			.build();
+
 		FlowManager.init(new FlowConfig.Builder(this).build());
 		FlowLog.setMinimumLoggingLevel(FlowLog.Level.V);
-		TypefaceUtil.overrideFont(getApplicationContext(), "SERIF", "helvetica-neue-bold.ttf");
+		TypefaceUtil.overrideFont(getApplicationContext(), "SERIF",
+			"helvetica-neue-bold.ttf");
 		TwitterApp.context = this;
 	}
 
 	public static TwitterClient getRestClient() {
 		return (TwitterClient) TwitterClient.getInstance(TwitterClient.class, TwitterApp.context);
+	}
+
+	public TwitterComponent getTwitterComponent() {
+		return mTwitterComponent;
 	}
 }
