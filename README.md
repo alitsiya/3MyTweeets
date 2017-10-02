@@ -55,7 +55,7 @@ The following **additional** features are implemented:
 Here's a walkthrough of implemented user stories:
 
 <a href="https://www.dropbox.com/s/x8i65ddab3e9m6j/device-2017-10-01-171855.mp4?dl=0">Link to DropBox</a>
-
+<a href="https://www.dropbox.com/s/nv5z6jljb1id11v/device-2017-10-02-093814.mp4?dl=0">Link to DropBox with ScreenName</a>
 ## Notes
 
 Describe any challenges encountered while building the app.

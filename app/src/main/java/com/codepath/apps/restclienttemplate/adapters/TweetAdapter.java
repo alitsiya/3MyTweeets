@@ -52,6 +52,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         Tweet tweet = mTweets.get(position);
 
         holder.tvUsername.setText(tweet.user.name);
+        holder.tvScreenName.setText("@" + tweet.user.screenName);
         holder.tvBody.setText(tweet.body);
         String relativeTime = new DateTimeUtil().getRelativeTimeAgo(tweet.createdAt);
         holder.tvTimeAgo.setText(relativeTime);
@@ -68,6 +69,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ImageView ivProfileImage;
         public TextView tvUsername;
+        public TextView tvScreenName;
         public TextView tvBody;
         public TextView tvTimeAgo;
 
@@ -76,6 +78,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
 
             ivProfileImage = (ImageView) itemView.findViewById(R.id.ivProfileImage);
             tvUsername = (TextView) itemView.findViewById(R.id.tvUserName);
+            tvScreenName = (TextView) itemView.findViewById(R.id.tvScreenName);
             tvBody = (TextView) itemView.findViewById(R.id.tvBody);
             tvTimeAgo = (TextView) itemView.findViewById(R.id.tvTimeAgo);
             itemView.setOnClickListener(this);

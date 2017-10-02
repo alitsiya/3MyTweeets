@@ -26,8 +26,16 @@
         android:id="@+id/tvTimeAgo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/tvBody"
+        android:layout_above="@+id/tvScreenName"
         android:layout_alignParentEnd="true"/>
+    <TextView
+        android:id="@+id/tvScreenName"
+        android:textSize="@dimen/small_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/margin"
+        android:layout_below="@+id/tvUserName"
+        android:layout_toEndOf="@+id/ivProfileImage"/>
 
     <TextView
         android:id="@+id/tvBody"
@@ -36,7 +44,7 @@
         android:linksClickable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tvUserName"
+        android:layout_below="@+id/tvScreenName"
         android:layout_marginLeft="@dimen/margin"
         android:layout_marginBottom="@dimen/margin"
         android:layout_toEndOf="@+id/ivProfileImage"/>
